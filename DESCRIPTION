@@ -1,17 +1,43 @@
 Package: retirer
-Title: What the Package Does (One Line, Title Case)
+Title: Retirement and Demographic Visualization Tools
 Version: 0.0.0.9000
-Authors@R: 
-    person("First", "Last", , "first.last@example.com", role = c("aut", "cre"))
-Description: What the package does (one paragraph).
-License: `use_mit_license()`, `use_gpl3_license()` or friends to pick a
-    license
+Authors@R: c(
+    person("Cooper", "Nelson", , "a02357942@usu.edu", role = "cre"),
+    person(
+    "Aleksey",
+    "Kulyukin", 
+    , 
+    "aleksey.kulyukin.2022@gmail.com", 
+    role = "aut"
+    ),
+    person("Noah", "Mouritsen", , "a02354562@aggies.usu.edu", role = "aut"),
+    person("Liam", "Luvai", , "a02390651@aggies.usu.edu", role = "aut")
+  )
+Description: Tools for exploring a cleaned package data set built from OECD
+    effective labour market exit age data and United Nations World Population
+    Prospects demographic indicators. Supports group and country trend plots,
+    map-based group comparisons, one-year snapshots, women-versus-men and
+    sex-gap analysis, relationship plots, and helper functions that return the
+    underlying tidy data.
+License: CC BY 4.0
+URL: https://github.com/coopernelson112/retirer
+BugReports: https://github.com/coopernelson112/retirer/issues
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.3.3
 Imports:
     dplyr,
-    ggplot2
+    ggh4x,
+    ggplot2,
+    maps,
+    rlang,
+    tidyr
 Depends: 
-    R (>= 3.5)
+    R (>= 4.1.0)
 LazyData: true
+Suggests: 
+    knitr,
+    rmarkdown,
+    testthat (>= 3.0.0)
+Config/testthat/edition: 3
+VignetteBuilder: knitr

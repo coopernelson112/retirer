@@ -1,3 +1,35 @@
+# This script rebuilds the package data set `retirement` from two public sources.
+#
+# 1. OECD effective labour market exit age data
+#    Original OECD file used in this project:
+#    https://www.oecd-ilibrary.org/the-effective-labour-market-exit-age-is-among-the-lowest-in-the-oecd_7769dafb-en.xlsx?itemId=%2Fcontent%2Fcomponent%2F7769dafb-en
+#
+#    The original OECD URL was retired during the OECD site migration, so it no
+#    longer resolves directly. A 2020 view of the underlying OECD data can still
+#    be inspected via the Internet Archive here:
+#    https://web.archive.org/web/20230319225535/https://stats.oecd.org/Index.aspx?QueryId=111939&Lang=en#
+#
+#    Local raw file expected by this script:
+#    data-raw/effective_labour_market_exit_age.xlsx
+#
+# 2. United Nations World Population Prospects 2024 demographic indicators
+#    Direct CSV download used in this project:
+#    https://population.un.org/wpp/assets/Excel%20Files/1_Indicator%20(Standard)/CSV_FILES/WPP2024_Demographic_Indicators_Medium.csv.gz
+#
+#    World Population Prospects download page:
+#    https://population.un.org/wpp/downloads?folder=Standard%20Projections&group=CSV%20format
+#
+#    Local raw file expected by this script:
+#    data-raw/WPP2024_Demographic_Indicators_Medium.csv
+#
+# Packages required by this script:
+# - dplyr
+# - readr
+# - readxl
+# - stringr
+# - tidyr
+# - usethis
+
 retirement_file <- file.path(
   "data-raw", "effective_labour_market_exit_age.xlsx"
 )

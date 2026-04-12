@@ -1,105 +1,78 @@
-#' Map country groups in the retirement dataset
+#' Map OECD and EU retirement groups
 #'
-#' Draw a world map showing countries in the retirement dataset, optionally
-#' filtered by OECD and EU membership.
+#' Plot a world map showing countries grouped by OECD and EU membership for a
+#' selected year.
 #'
-#' @param year Optional integer year to map. If `NULL`, all observations in
-#'   [retirement] are used. If supplied, `year` must be present in the dataset.
-#' @param oecd Optional logical scalar indicating OECD membership to select.
-#'   `TRUE` selects OECD countries, `FALSE` selects non-OECD countries, and
-#'   `NULL` applies no OECD filter.
-#' @param eu Optional logical scalar indicating EU membership to select.
-#'   `TRUE` selects EU countries, `FALSE` selects non-EU countries, and
-#'   `NULL` applies no EU filter.
-#' @param include_nonrepresented Logical scalar indicating whether countries
-#' not represented in the selected data should be shown in a muted background
-#' fill.
+#' @param year Optional numeric year to plot. If `NULL`, the most recent year in
+#'   [retirement] is used.
+#' @param groups Optional character vector of group labels to display. Valid
+#'   values are `"OECD + EU"`, `"OECD only"`, `"EU only"`, and
+#'   `"Neither OECD nor EU"`. If `NULL`, all four groups are shown.
+#' @param include_nonrepresented Logical scalar indicating whether countries or
+#'   regions not represented in the dataset should be shown as `"No data"`.
 #'
-#' @return
+#' @returns
 #' A `ggplot2` object.
 #'
 #' @details
-#' Countries are classified into four groups:
+#' The map classifies countries into four groups based on OECD and EU
+#' membership:
 #'
 #' - `"OECD + EU"`
 #' - `"OECD only"`
 #' - `"EU only"`
 #' - `"Neither OECD nor EU"`
 #'
-#' Setting `oecd` and `eu` to `NULL` shows all four groups. Supplying `TRUE` or
-#' `FALSE` for either argument filters the displayed countries accordingly.
-#'
-#' Country names are harmonized internally to the naming convention used by the
-#' world map polygons. Aggregate observations such as OECD averages and EU
-#' aggregates are excluded from the map.
+#' Aggregate entries such as `"European Union (27 countries)"` and
+#' `"OECD - Average"` are excluded before mapping.
 #'
 #' @examples
 #' map_groups()
+#'
 #' map_groups(year = 1970)
-#' map_groups(year = 1970, oecd = TRUE)
-#' map_groups(year = 1970, eu = TRUE)
-#' map_groups(year = 1970, oecd = TRUE, eu = FALSE)
+#'
+#' map_groups(groups = "OECD + EU")
+#'
+#' map_groups(groups = c("OECD + EU", "OECD only"))
+#'
 #' map_groups(include_nonrepresented = FALSE)
 #'
 #' @export
 map_groups <- function(
   year = NULL,
-  oecd = NULL,
-  eu = NULL,
+  groups = NULL,
   include_nonrepresented = TRUE
 ) {
-  data <- retirement
-
-  if (!is.null(oecd) && (!is.logical(oecd) || length(oecd) != 1 ||
-    is.na(oecd))) {
-    stop("Invalid `oecd`: must be TRUE, FALSE, or NULL.")
+  if (is.null(year)) {
+    year <- max(retirement$year, na.rm = TRUE)
   }
 
-  if (!is.null(eu) && (!is.logical(eu) || length(eu) != 1 || is.na(eu))) {
-    stop("Invalid `eu`: must be TRUE, FALSE, or NULL.")
+  if (!is.numeric(year) || length(year) != 1 || is.na(year)) {
+    stop("`year` must be a single numeric value or NULL.")
   }
 
-  if (!is.null(year)) {
-    if (!is.numeric(year) || length(year) != 1 || is.na(year) || year !=
-      as.integer(year)) {
-      stop("Invalid `year`: `year` must be a single integer value or `NULL`.")
-    }
+  if (!is.logical(include_nonrepresented) ||
+    length(include_nonrepresented) != 1 ||
+    is.na(include_nonrepresented)) {
+    stop("`include_nonrepresented` must be TRUE or FALSE.")
+  }
 
-    year <- as.integer(year)
-    available_years <- sort(unique(data$year))
+  validate_groups(groups)
 
-    if (!year %in% available_years) {
-      stop(
-        paste0(
-          "Invalid `year`: ", year, ". ",
-          "`year` must be one of the years available in `retirement` ",
-          "from ", min(available_years), " to ", max(available_years), "."
-        )
-      )
-    }
+  data_year <- retirement |>
+    dplyr::filter(.data$year == year)
 
-    data <- data |>
-      dplyr::filter(.data$year == .env$year)
+  if (nrow(data_year) == 0) {
+    stop("No data available for the requested year.")
   }
 
   map_df <- prep_retirement_map_data(
-    data = data,
-    oecd = oecd,
-    eu = eu,
+    data = data_year,
+    groups = groups,
     include_nonrepresented = include_nonrepresented
   )
 
-  fill_values <- c(
-    "OECD + EU" = "#1B9E77",
-    "OECD only" = "#D95F02",
-    "EU only" = "#7570B3",
-    "Neither OECD nor EU" = "#E6AB02",
-    "No data" = "grey75"
-  )
-
-  if (!include_nonrepresented) {
-    fill_values <- fill_values[names(fill_values) != "No data"]
-  }
+  fill_limits <- levels(map_df$map_group)
 
   ggplot2::ggplot(
     map_df,
@@ -110,18 +83,19 @@ map_groups <- function(
       fill = .data$map_group
     )
   ) +
-    ggplot2::geom_polygon(
-      colour = "white",
-      linewidth = 0.15
-    ) +
+    ggplot2::geom_polygon(color = "white", linewidth = 0.2) +
     ggplot2::coord_quickmap() +
     ggplot2::scale_fill_manual(
-      values = fill_values,
-      drop = FALSE
+      values = retirement_group_colors,
+      drop = FALSE,
+      limits = fill_limits,
+      name = NULL
     ) +
-    ggplot2::labs(fill = NULL) +
-    ggplot2::theme_void() +
     ggplot2::theme(
+      axis.title = ggplot2::element_blank(),
+      axis.text = ggplot2::element_blank(),
+      axis.ticks = ggplot2::element_blank(),
+      panel.grid = ggplot2::element_blank(),
       legend.position = "bottom"
     )
 }

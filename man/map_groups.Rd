@@ -2,35 +2,31 @@
 % Please edit documentation in R/map_groups.R
 \name{map_groups}
 \alias{map_groups}
-\title{Map country groups in the retirement dataset}
+\title{Map OECD and EU retirement groups}
 \usage{
-map_groups(year = NULL, oecd = NULL, eu = NULL, include_nonrepresented = TRUE)
+map_groups(year = NULL, groups = NULL, include_nonrepresented = TRUE)
 }
 \arguments{
-\item{year}{Optional integer year to map. If \code{NULL}, all observations in
-\link{retirement} are used. If supplied, \code{year} must be present in the dataset.}
+\item{year}{Optional numeric year to plot. If \code{NULL}, the most recent year in
+\link{retirement} is used.}
 
-\item{oecd}{Optional logical scalar indicating OECD membership to select.
-\code{TRUE} selects OECD countries, \code{FALSE} selects non-OECD countries, and
-\code{NULL} applies no OECD filter.}
+\item{groups}{Optional character vector of group labels to display. Valid
+values are \code{"OECD + EU"}, \code{"OECD only"}, \code{"EU only"}, and
+\code{"Neither OECD nor EU"}. If \code{NULL}, all four groups are shown.}
 
-\item{eu}{Optional logical scalar indicating EU membership to select.
-\code{TRUE} selects EU countries, \code{FALSE} selects non-EU countries, and
-\code{NULL} applies no EU filter.}
-
-\item{include_nonrepresented}{Logical scalar indicating whether countries
-not represented in the selected data should be shown in a muted background
-fill.}
+\item{include_nonrepresented}{Logical scalar indicating whether countries or
+regions not represented in the dataset should be shown as \code{"No data"}.}
 }
 \value{
 A \code{ggplot2} object.
 }
 \description{
-Draw a world map showing countries in the retirement dataset, optionally
-filtered by OECD and EU membership.
+Plot a world map showing countries grouped by OECD and EU membership for a
+selected year.
 }
 \details{
-Countries are classified into four groups:
+The map classifies countries into four groups based on OECD and EU
+membership:
 \itemize{
 \item \code{"OECD + EU"}
 \item \code{"OECD only"}
@@ -38,19 +34,18 @@ Countries are classified into four groups:
 \item \code{"Neither OECD nor EU"}
 }
 
-Setting \code{oecd} and \code{eu} to \code{NULL} shows all four groups. Supplying \code{TRUE} or
-\code{FALSE} for either argument filters the displayed countries accordingly.
-
-Country names are harmonized internally to the naming convention used by the
-world map polygons. Aggregate observations such as OECD averages and EU
-aggregates are excluded from the map.
+Aggregate entries such as \code{"European Union (27 countries)"} and
+\code{"OECD - Average"} are excluded before mapping.
 }
 \examples{
 map_groups()
+
 map_groups(year = 1970)
-map_groups(year = 1970, oecd = TRUE)
-map_groups(year = 1970, eu = TRUE)
-map_groups(year = 1970, oecd = TRUE, eu = FALSE)
+
+map_groups(groups = "OECD + EU")
+
+map_groups(groups = c("OECD + EU", "OECD only"))
+
 map_groups(include_nonrepresented = FALSE)
 
 }

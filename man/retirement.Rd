@@ -3,16 +3,146 @@
 \docType{data}
 \name{retirement}
 \alias{retirement}
-\title{Retirement and demographic indicators}
+\title{Retirement-age and demographic indicators by country and year}
 \format{
-A data frame with one row per country-year.
+A data frame with 595 rows and 72 variables:
+\describe{
+\item{country}{Country name or aggregate series name.}
+\item{year}{Calendar year.}
+\item{ave_age_men}{Average effective labour market exit age for men.}
+\item{ave_age_women}{Average effective labour market exit age for women.}
+\item{oecd_country}{Indicator for OECD membership in the source data.}
+
+\item{SortOrder}{Source-data sort order.}
+\item{LocID}{Location identifier from World Population Prospects.}
+\item{Notes}{Source notes field.}
+\item{ISO3_code}{ISO 3166-1 alpha-3 country code.}
+\item{ISO2_code}{ISO 3166-1 alpha-2 country code.}
+\item{SDMX_code}{SDMX location code.}
+\item{LocTypeID}{Location type identifier.}
+\item{LocTypeName}{Location type name.}
+\item{ParentID}{Parent location identifier.}
+\item{Location}{Source location name.}
+\item{VarID}{Projection variant identifier.}
+\item{Variant}{Projection variant label.}
+\item{Time}{Source time variable.}
+
+\item{TPopulation1Jan}{Total Population, as of 1 January (thousands).}
+\item{TPopulation1July}{Total Population, as of 1 July (thousands).}
+\item{TPopulationMale1July}{Male Population, as of 1 July (thousands).}
+\item{TPopulationFemale1July}{Female Population, as of 1 July
+(thousands).}
+\item{PopDensity}{Population Density, as of 1 July
+(persons per square km).}
+\item{PopSexRatio}{Population Sex Ratio, as of 1 July
+(males per 100 females).}
+\item{MedianAgePop}{Median Age, as of 1 July (years).}
+\item{NatChange}{Natural Change, Births minus Deaths (thousands).}
+\item{NatChangeRT}{Rate of Natural Change (per 1,000 population).}
+\item{PopChange}{Population Change (thousands).}
+\item{PopGrowthRate}{Population Growth Rate (percentage).}
+\item{DoublingTime}{Population Annual Doubling Time (years).}
+
+\item{Births}{Births (thousands).}
+\item{Births1519}{Births by women aged 15 to 19 (thousands).}
+\item{CBR}{Crude Birth Rate (births per 1,000 population).}
+\item{TFR}{Total Fertility Rate (live births per woman).}
+\item{NRR}{Net Reproduction Rate (surviving daughters per woman).}
+\item{MAC}{Mean Age Childbearing (years).}
+\item{SRB}{Sex Ratio at Birth (males per 100 female births).}
+
+\item{Deaths}{Total Deaths (thousands).}
+\item{DeathsMale}{Male Deaths (thousands).}
+\item{DeathsFemale}{Female Deaths (thousands).}
+\item{CDR}{Crude Death Rate (deaths per 1,000 population).}
+
+\item{LEx}{Life Expectancy at Birth, both sexes (years).}
+\item{LExMale}{Male Life Expectancy at Birth (years).}
+\item{LExFemale}{Female Life Expectancy at Birth (years).}
+\item{LE15}{Life Expectancy at Age 15, both sexes (years).}
+\item{LE15Male}{Male Life Expectancy at Age 15 (years).}
+\item{LE15Female}{Female Life Expectancy at Age 15 (years).}
+\item{LE65}{Life Expectancy at Age 65, both sexes (years).}
+\item{LE65Male}{Male Life Expectancy at Age 65 (years).}
+\item{LE65Female}{Female Life Expectancy at Age 65 (years).}
+\item{LE80}{Life Expectancy at Age 80, both sexes (years).}
+\item{LE80Male}{Male Life Expectancy at Age 80 (years).}
+\item{LE80Female}{Female Life Expectancy at Age 80 (years).}
+
+\item{InfantDeaths}{Infant Deaths, under age 1 (thousands).}
+\item{IMR}{Infant Mortality Rate (infant deaths per 1,000 live births).}
+\item{LBsurvivingAge1}{Live births Surviving to Age 1 (thousands).}
+\item{Under5Deaths}{Deaths under age 5 (thousands).}
+\item{Q5}{Under-five Mortality Rate
+(deaths under age 5 per 1,000 live births).}
+\item{Q0040}{Mortality before Age 40, both sexes
+(deaths under age 40 per 1,000 live births).}
+\item{Q0040Male}{Male mortality before Age 40
+(deaths under age 40 per 1,000 male live births).}
+\item{Q0040Female}{Female mortality before Age 40
+(deaths under age 40 per 1,000 female live births).}
+\item{Q0060}{Mortality before Age 60, both sexes
+(deaths under age 60 per 1,000 live births).}
+\item{Q0060Male}{Male mortality before Age 60
+(deaths under age 60 per 1,000 male live births).}
+\item{Q0060Female}{Female mortality before Age 60
+(deaths under age 60 per 1,000 female live births).}
+\item{Q1550}{Mortality between Age 15 and 50, both sexes
+(deaths under age 50 per 1,000 alive at age 15).}
+\item{Q1550Male}{Male mortality between Age 15 and 50
+(deaths under age 50 per 1,000 males alive at age 15).}
+\item{Q1550Female}{Female mortality between Age 15 and 50
+(deaths under age 50 per 1,000 females alive at age 15).}
+\item{Q1560}{Mortality between Age 15 and 60, both sexes
+(deaths under age 60 per 1,000 alive at age 15).}
+\item{Q1560Male}{Male mortality between Age 15 and 60
+(deaths under age 60 per 1,000 males alive at age 15).}
+\item{Q1560Female}{Female mortality between Age 15 and 60
+(deaths under age 60 per 1,000 females alive at age 15).}
+
+\item{NetMigrations}{Net Number of Migrants (thousands).}
+\item{CNMR}{Net Migration Rate (per 1,000 population).}
+}
+}
+\source{
+OECD effective labour market exit age data and United Nations World
+Population Prospects 2024.
 }
 \usage{
 retirement
 }
 \description{
-A country-year dataset combining effective labour market exit age data from
-the OECD with demographic indicators from the United Nations World
+A country-year dataset combining effective labour market exit age indicators
+from the OECD with demographic indicators from the United Nations World
 Population Prospects.
+}
+\details{
+Each row represents one country or aggregate series in one calendar year.
+The dataset includes both country observations and selected aggregate series,
+such as \code{"European Union (27 countries)"} and \code{"OECD - Average"}.
+
+Retirement-age measures are stored separately for women and men in
+\code{ave_age_women} and \code{ave_age_men}. Demographic indicators include measures
+of population size, fertility, mortality, migration, and life expectancy.
+
+Country names follow the conventions used in the source data. Examples
+include \code{"China (People's Republic of)"}, \code{"Korea"}, \code{"Slovak Republic"},
+and \code{"Türkiye"}.
+
+The dataset was created by combining OECD effective labour
+market exit age data with demographic indicators from the United Nations
+World Population Prospects.
+
+Aggregate series such as \code{"European Union (27 countries)"} and
+\code{"OECD - Average"} are included in the dataset for reference, but they are
+not treated as countries in country-level plotting functions.
+
+Plotting functions in this package use a derived measure,
+\code{"retirement_age"}, that maps to \code{ave_age_women}, \code{ave_age_men}, or their
+row-wise average depending on the value of the \code{sex} argument. For
+sex-comparable demographic measures such as \code{LE65}, \code{Deaths}, \code{Q1560}, and
+related variables, plotting functions use the sex-specific columns when
+\code{sex = "women"} or \code{sex = "men"} and the official combined-series column in
+the dataset when \code{sex = "both"}.
 }
 \keyword{datasets}
