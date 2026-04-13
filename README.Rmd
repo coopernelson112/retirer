@@ -77,9 +77,9 @@ library(retirer)
 Inspect the built-in data:
 
 ```{r}
-retirement
-sex_comparable_measures()
-retirement_countries()
+head(retirement)
+head(sex_comparable_measures())
+head(retirement_countries())
 ```
 
 Plot retirement-age trends across OECD and EU membership groups:
@@ -193,6 +193,6 @@ The best next step is the getting-started vignette, which walks through a full g
 
 After installation, open it with:
 
-```{r}
+```r
 vignette("getting-started", package = "retirer")
 ```
