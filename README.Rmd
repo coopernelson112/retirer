@@ -70,13 +70,13 @@ It also includes helper functions that return the underlying tidy data used in t
 
 Load the package:
 
-```r
+```{r}
 library(retirer)
 ```
 
 Inspect the built-in data:
 
-```r
+```{r}
 retirement
 sex_comparable_measures()
 retirement_countries()
@@ -84,19 +84,19 @@ retirement_countries()
 
 Plot retirement-age trends across OECD and EU membership groups:
 
-```r
+```{r}
 plot_retirement_trends()
 ```
 
 Map OECD and EU membership groups:
 
-```r
+```{r}
 map_groups(year = 2020)
 ```
 
 Compare countries in a single year:
 
-```r
+```{r}
 plot_measure_snapshot(
   measure = "LE65",
   year = 2020,
@@ -107,7 +107,7 @@ plot_measure_snapshot(
 
 Study women-men differences:
 
-```r
+```{r}
 plot_sex_gap_trends(
   measure = "retirement_age",
   level = "country",
@@ -117,7 +117,7 @@ plot_sex_gap_trends(
 
 Study the relationship between retirement age and life expectancy:
 
-```r
+```{r}
 plot_measure_relationship(
   x_measure = "LE65",
   y_measure = "retirement_age",
@@ -193,6 +193,6 @@ The best next step is the getting-started vignette, which walks through a full g
 
 After installation, open it with:
 
-```r
+```{r}
 vignette("getting-started", package = "retirer")
 ```
