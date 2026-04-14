@@ -1,1 +1,7 @@
 .Rproj.user
+.Rhistory
+inst/doc
+data-raw/*.csv
+data-raw/*.csv.gz
+data-raw/*.xlsx
+data-raw/*.xls

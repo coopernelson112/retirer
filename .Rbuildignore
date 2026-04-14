@@ -1,2 +1,7 @@
 ^retirer\.Rproj$
 ^\.Rproj\.user$
+^data-raw$
+^LICENSE\.md$
+^\.Rhistory$
+^\.gitignore$
+^README\.Rmd$

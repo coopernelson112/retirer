@@ -1,0 +1,434 @@
+---
+title: "Getting started with retirer"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Getting started with retirer}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  fig.width = 9,
+  fig.height = 6,
+  out.width = "100%",
+  fig.align = "center",
+  dpi = 300
+)
+```
+
+# Introduction
+
+`retirer` is designed for exploratory analysis of retirement-age and demographic data in a single package.
+
+It combines effective labour market exit age data from the OECD with demographic indicators from the United Nations World Population Prospects. The package is especially useful for graduate-level exploratory work where you want to move back and forth between:
+
+* time trends,
+* one-year comparisons,
+* women-versus-men analysis,
+* relationships between measures, and
+* simple geographic comparisons of OECD/EU membership groups.
+
+This vignette walks through a typical workflow.
+
+# Data provenance
+
+The package data included in `retirer` are a cleaned and joined version of two public data sources:
+
+* OECD effective labour market exit age data by country, sex, and year
+* United Nations World Population Prospects 2024 demographic indicators
+
+The package includes the cleaned analysis-ready data set, `retirement`, for live examples and reproducible analysis. The data-construction logic used during development is kept in `data-raw/build_retirement.R`.
+
+The package is designed so that most users can work directly with the cleaned package data, while still being able to inspect how the final data set was assembled.
+
+# The data
+
+The package ships with a built-in data set called `retirement`.
+
+```{r}
+library(retirer)
+dim(retirement)
+names(retirement)
+```
+
+Each row represents one country or aggregate series in one year. The data include both country observations and aggregate entries such as `"European Union (27 countries)"` and `"OECD - Average"`.
+
+You can inspect the available countries, groups, and measures with helper functions:
+
+```{r}
+retirement_groups()
+retirement_countries()
+retirement_variables()
+sex_comparable_measures()
+```
+
+## Country names and aliases
+
+The package accepts several common country-name aliases for convenience. For example, `"Turkey"` resolves to `"Türkiye"` and `"South Korea"` resolves to `"Korea"` in returned plot labels or data labels.
+
+```{r}
+retirement_country_aliases()
+```
+
+# 1. Start with trends
+
+A good first step is usually to inspect broad time trends.
+
+## Retirement-age trends
+
+The default retirement plot compares the four OECD/EU membership groups over time.
+
+```{r}
+plot_retirement_trends()
+```
+
+You can also focus on selected countries.
+
+```{r}
+plot_retirement_trends(
+  level = "country",
+  countries = c("Japan", "Germany", "United States")
+)
+```
+
+## Demographic trends
+
+Use `plot_demography_trends()` for demographic measures such as fertility, migration, mortality, life expectancy, or population size.
+
+```{r}
+plot_demography_trends(measure = "TFR")
+```
+
+Life-expectancy measures also support sex-specific plotting.
+
+```{r}
+plot_demography_trends(
+  measure = "LE65",
+  sex = "women",
+  level = "country",
+  countries = c("Japan", "Turkey", "South Korea")
+)
+```
+
+## Paired retirement-demography trends
+
+If you want to compare retirement age with one demographic measure across time, use:
+
+```{r}
+plot_retirement_vs_demography(
+  demographic_measure = "LE65"
+)
+```
+
+## Map-based group comparisons
+
+In addition to time-series and cross-sectional plots, `retirer` can also display OECD/EU membership groups on a world map.
+
+This is useful when your main question is geographic rather than temporal.
+
+```{r}
+map_groups()
+```
+
+You can also focus on selected groups and a specific year.
+
+```{r}
+map_groups(
+  year = 2020,
+  groups = c("OECD + EU", "OECD only"),
+  include_nonrepresented = TRUE
+)
+```
+
+# 2. Move to cross-sectional snapshots
+
+Trend plots help you see change over time. Snapshot plots help you compare groups or countries in a single year.
+
+## Snapshot data
+
+`measure_snapshot_data()` returns the underlying one-year data frame.
+
+```{r}
+measure_snapshot_data(
+  measure = "retirement_age",
+  year = 2020,
+  sex = "women"
+)
+```
+
+## Snapshot plots
+
+The corresponding plot is:
+
+```{r}
+plot_measure_snapshot(
+  measure = "retirement_age",
+  year = 2020,
+  sex = "women"
+)
+```
+
+Country-level snapshots are often useful for side-by-side comparison.
+
+```{r}
+plot_measure_snapshot(
+  measure = "LE65",
+  year = 2020,
+  level = "country",
+  countries = c("China", "Japan", "Germany", "Turkey"),
+  sort = "descending"
+)
+```
+
+# 3. Analyze women-versus-men differences
+
+A major use case for `retirer` is explicit sex comparison.
+
+## Which measures support sex comparison?
+
+Not every demographic variable has a women/men version. Use:
+
+```{r}
+sex_comparable_measures()
+```
+
+For sex-comparable demographic measures, `sex = "both"` uses the official combined-series column in the dataset. Retirement age is the main exception: because the data only provide separate women’s and men’s retirement ages, `sex = "both"` uses their arithmetic mean.
+
+## Women and men over time
+
+Use `plot_sex_comparison_trends()` when you want to compare the two series directly.
+
+```{r}
+plot_sex_comparison_trends(
+  measure = "retirement_age"
+)
+```
+
+You can also do this for other sex-comparable measures:
+
+```{r}
+plot_sex_comparison_trends(
+  measure = "Q0040",
+  level = "country",
+  countries = c("China", "Japan", "Germany", "Turkey")
+)
+```
+
+## Sex gaps over time
+
+Use `plot_sex_gap_trends()` when you want a directed difference instead of two separate lines.
+
+```{r}
+plot_sex_gap_trends(
+  measure = "retirement_age",
+  level = "country",
+  countries = c("China", "Japan", "Germany")
+)
+```
+
+You can reverse the sign convention if needed.
+
+```{r}
+plot_sex_gap_trends(
+  measure = "LE65",
+  gap = "men_minus_women"
+)
+```
+
+Gap plots always stay on the original scale of the measure. For example, a gap in `retirement_age` is measured in years, while a gap in `Q1560` is measured on the original mortality scale used by that variable.
+
+## Sex-gap snapshots
+
+You can also compare sex gaps across groups or countries in a single year.
+
+```{r}
+sex_gap_data(
+  measure = "LE65",
+  year = 2020,
+  level = "country",
+  countries = c("China", "Japan")
+)
+```
+
+```{r}
+plot_sex_gap_snapshot(
+  measure = "Q1560",
+  year = 2020,
+  level = "country",
+  countries = c("China", "Japan", "Germany"),
+  gap = "women_minus_men"
+)
+```
+
+## Retirement gaps versus demographic gaps
+
+If you want to compare the sex gap in retirement age to the sex gap in another measure, use:
+
+```{r}
+plot_retirement_vs_demography_gap(
+  demographic_measure = "LE65"
+)
+```
+
+# 4. Study relationships between measures
+
+Once you understand trends and snapshots, the next step is often to ask whether two measures are associated.
+
+## Relationship data
+
+`measure_relationship_data()` returns a tidy one-year cross section with both measures.
+
+```{r}
+measure_relationship_data(
+  x_measure = "LE65",
+  y_measure = "retirement_age",
+  year = 2020,
+  level = "country",
+  countries = c("China", "Japan", "Germany")
+)
+```
+
+## Relationship plots
+
+Use `plot_measure_relationship()` for a scatterplot.
+
+```{r}
+plot_measure_relationship(
+  x_measure = "LE65",
+  y_measure = "retirement_age",
+  year = 2020,
+  level = "country",
+  countries = c("China", "Japan", "Germany"),
+  show_labels = TRUE,
+  add_smooth = FALSE
+)
+```
+
+You can also compare measures with different sex selections.
+
+```{r}
+plot_measure_relationship(
+  x_measure = "LE65",
+  y_measure = "retirement_age",
+  year = 2020,
+  x_sex = "women",
+  y_sex = "men",
+  level = "country",
+  countries = c("China", "Japan", "Germany")
+)
+```
+
+By default, `plot_measure_relationship()` adds a black least-squares regression line. Set `add_smooth = FALSE` when you want only the points.
+
+## Gap relationships
+
+Use `plot_gap_relationship()` when both axes are directed sex gaps.
+
+```{r}
+plot_gap_relationship(
+  x_measure = "LE65",
+  y_measure = "retirement_age",
+  year = 2020,
+  level = "country",
+  countries = c("China", "Japan", "Germany"),
+  gap = "women_minus_men",
+  show_labels = TRUE,
+  add_smooth = FALSE
+)
+```
+
+This is useful when your substantive question is about disparities rather than levels.
+
+# 5. A typical exploratory workflow
+
+For a graduate-level exploratory project, a good sequence is:
+
+1. Start with a trend plot to understand the broad time pattern.
+2. Use a map when a geographic comparison is the most natural first view.
+3. Use a snapshot plot to compare countries or groups in a focal year.
+4. Check whether the measure supports sex comparison.
+5. Inspect women-versus-men differences directly with comparison and gap plots.
+6. Use relationship plots to see whether two measures move together.
+7. Pull the underlying data with `*_data()` helpers when you need custom figures or tables.
+
+For example:
+
+```{r}
+plot_retirement_trends(
+  level = "country",
+  countries = c("China", "Japan", "Germany")
+)
+
+plot_measure_snapshot(
+  measure = "LE65",
+  year = 2020,
+  level = "country",
+  countries = c("China", "Japan", "Germany")
+)
+
+plot_sex_gap_trends(
+  measure = "retirement_age",
+  level = "country",
+  countries = c("China", "Japan", "Germany")
+)
+
+plot_measure_relationship(
+  x_measure = "LE65",
+  y_measure = "retirement_age",
+  year = 2020,
+  level = "country",
+  countries = c("China", "Japan", "Germany"),
+  show_labels = TRUE,
+  add_smooth = FALSE
+)
+```
+
+# 6. Custom analysis with the returned data
+
+One of the strengths of `retirer` is that the plotting functions are paired with tidy data helpers.
+
+For example, you can get snapshot data and then make your own plot:
+
+```{r}
+snap <- measure_snapshot_data(
+  measure = "retirement_age",
+  year = 2020,
+  sex = "women",
+  level = "country",
+  countries = c("China", "Japan", "Germany")
+)
+
+snap
+```
+
+Or you can get relationship data and fit your own model:
+
+```{r}
+rel <- measure_relationship_data(
+  x_measure = "LE65",
+  y_measure = "retirement_age",
+  year = 2020,
+  level = "country",
+  countries = c("China", "Japan", "Germany")
+)
+
+rel
+```
+
+# Conclusion
+
+`retirer` is designed to support a coherent exploratory workflow rather than just isolated plotting calls.
+
+The core idea is simple:
+
+* use trend plots for change over time,
+* use maps for geographic group comparison,
+* use snapshot plots for one-year comparisons,
+* use sex-comparison functions for women-versus-men analysis,
+* use relationship plots to study associations, and
+* use the data helpers whenever you need custom outputs.
+
+That combination should cover many first-pass research tasks in retirement and demographic analysis.
