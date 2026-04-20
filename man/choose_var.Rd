@@ -2,13 +2,19 @@
 % Please edit documentation in R/choose_var.R
 \name{choose_var}
 \alias{choose_var}
-\title{Choose any variables from retirement data to use for analysis}
+\title{Choose variables from retirement data to use for analysis}
 \usage{
 choose_var(..., data = retirement)
 }
 \arguments{
-\item{...}{Any variable chosen to keep in the final dataset}
+\item{...}{Variable names to keep in the final dataset.}
+
+\item{data}{A data frame to select variables from. Defaults to \code{retirement}.}
+}
+\value{
+A data frame containing only the selected variables.
 }
 \description{
-If no variables are chosen, some general population statistics are kept
+If no variables are chosen, a default set of general population
+statistics is kept.
 }
