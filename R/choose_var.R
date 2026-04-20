@@ -1,11 +1,21 @@
-choose_var <- function(v1 = "ave_age_men", v2 = "ave_age_women",
-                       v3 = "nrr", v4 = "infantdeaths", v5 = "imr") {
+#' Choose any variables from retirement data to use for analysis
+#'
+#' If no variables are chosen, some general population statistics are kept
+#'
+#' @param ... Any variable chosen to keep in the final dataset
+#' @export
+choose_var <- function(..., data = retirement) {
 
-  preds <- vapply(c(v1, v2, v3, v4, v5), as.character, c(""))
+  chose <- c(...)
 
-  user_data <- retirement |>
+    if (length(chose) == 0) {
+      chose <- c("country", "year", "PopDensity", "PopSexRatio",
+                  "MedianAgePop", "PopGrowthRate")
+    }
 
-    dplyr::select(year, country, preds[1], preds[2], preds[3], preds[4], preds[5])
+  fin_data <- retirement |>
 
-  user_data
+    dplyr::select(dplyr::all_of(chose))
+
+  return(fin_data)
 }
