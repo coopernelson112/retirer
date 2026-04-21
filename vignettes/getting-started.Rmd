@@ -32,6 +32,7 @@ It combines effective labour market exit age data from the OECD with demographic
 * simple geographic comparisons of OECD/EU membership groups.
 
 This vignette walks through a typical workflow.
+You can find the source code here: [retirer GitHub repository](https://github.com/coopernelson112/retirer)
 
 # Data provenance
 
