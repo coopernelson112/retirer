@@ -1,4 +1,5 @@
-# This script rebuilds the package data set `retirement` from two public sources.
+# This script rebuilds the package data set `retirement` from two public
+# sources:
 #
 # 1. OECD effective labour market exit age data
 #    Original OECD file used in this project:

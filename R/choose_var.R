@@ -9,7 +9,6 @@
 #' @return A data frame containing only the selected variables.
 #' @export
 choose_var <- function(..., data = retirement) {
-
   chose <- c(...)
 
   if (length(chose) == 0) {

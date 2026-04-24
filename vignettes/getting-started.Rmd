@@ -19,11 +19,24 @@ knitr::opts_chunk$set(
 )
 ```
 
+```{css, echo = FALSE}
+p.caption {
+  font-style: italic;
+  text-align: center;
+  border: 1px solid #cccccc;
+  padding: 0.5em;
+  margin-top: 0.5em;
+  margin-bottom: 1em;
+}
+```
+
 # Introduction
 
 `retirer` is designed for exploratory analysis of retirement-age and demographic data in a single package.
 
-It combines effective labour market exit age data from the OECD with demographic indicators from the United Nations World Population Prospects. The package is especially useful for graduate-level exploratory work where you want to move back and forth between:
+Retirement-age patterns matter because many societies are facing population aging, longer life expectancy, and changing old-age dependency structures. Comparing retirement behavior with demographic measures can help researchers think about pension sustainability, labor-force participation, and cross-national differences in how aging populations are supported.
+
+The package combines effective labour market exit age data from the OECD with demographic indicators from the United Nations World Population Prospects 2024. It is especially useful for graduate-level exploratory work where one wants to move back and forth between:
 
 * time trends,
 * one-year comparisons,
@@ -31,21 +44,33 @@ It combines effective labour market exit age data from the OECD with demographic
 * relationships between measures, and
 * simple geographic comparisons of OECD/EU membership groups.
 
-Understanding trends of retirement age has become increasingly important among the dramatic aging of certain countries as well as overall increased life expectancy. This data can help clarify how countries are handling the prevalence of these trends and remedy potential issues such as shrinking working-age population and pressure on pensions. 
+This vignette is organized as a typical exploratory workflow. It begins with broad time trends, then moves to maps, one-year snapshots, sex comparisons, relationships between measures, and custom analysis using returned data.
 
-This vignette walks through a typical workflow.
-You can find the source code here: [retirer GitHub repository](https://github.com/coopernelson112/retirer)
+The package source code is available in the [`retirer` GitHub repository](https://github.com/coopernelson112/retirer).
 
 # Data provenance
 
-The package data included in `retirer` are a cleaned and joined version of two public data sources:
+The package data included in `retirer` are a cleaned and joined version of two source data sets: OECD effective labour market exit age data and United Nations World Population Prospects 2024 demographic indicators.
 
-* OECD effective labour market exit age data by country, sex, and year
-* United Nations World Population Prospects 2024 demographic indicators
+The retirement-age data were originally downloaded from OECD sources by a member of the package development team for a homework assignment in Fall 2024. By Fall 2025, the same raw OECD retirement-age data set was no longer publicly accessible in a straightforward way, which creates a reproducibility limitation for users who want to rebuild the package data from raw sources. For reference, the original URL was:
 
-The package includes the cleaned analysis-ready data set, `retirement`, for live examples and reproducible analysis. The data-construction logic used during development is kept in `data-raw/build_retirement.R`.
+<https://www.oecd-ilibrary.org/the-effective-labour-market-exit-age-is-among-the-lowest-in-the-oecd_7769dafb-en.xlsx?itemId=%2Fcontent%2Fcomponent%2F7769dafb-en>
 
-The package is designed so that most users can work directly with the cleaned package data, while still being able to inspect how the final data set was assembled.
+An archived version of the 2020 OECD effective labour market exit age data can be accessed here:
+
+<https://web.archive.org/web/20230319225535/https://stats.oecd.org/Index.aspx?QueryId=111939&Lang=en#>
+
+The demographic variables come from the United Nations World Population Prospects 2024 demographic indicators. The direct compressed CSV file used to construct the package data was:
+
+<https://population.un.org/wpp/assets/Excel%20Files/1_Indicator%20(Standard)/CSV_FILES/WPP2024_Demographic_Indicators_Medium.csv.gz>
+
+The general World Population Prospects download page is:
+
+<https://population.un.org/wpp/downloads?folder=Standard%20Projections&group=CSV%20format>
+
+The package includes the cleaned, analysis-ready data set, `retirement`, for live examples and reproducible analysis. The data-construction logic used to assemble the package data is kept in `data-raw/build_retirement.R`.
+
+Most users can work directly with the cleaned package data, while users interested in provenance can inspect the data-construction script to see how the final data set was assembled.
 
 # The data
 
@@ -53,30 +78,66 @@ The package ships with a built-in data set called `retirement`.
 
 ```{r}
 library(retirer)
+library(ggplot2)
+
 dim(retirement)
-names(retirement)
 ```
 
 Each row represents one country or aggregate series in one year. The data include both country observations and aggregate entries such as `"European Union (27 countries)"` and `"OECD - Average"`.
 
-You can inspect the available countries, groups, and measures with helper functions:
+The variables include country identifiers, year, an OECD membership indicator, women’s and men’s effective labour market exit ages, and demographic indicators from the United Nations World Population Prospects. These demographic indicators include fertility, mortality, migration, total population, and life-expectancy measures. The package’s plotting functions also derive OECD/EU membership groups for grouped trend plots and maps.
+
+The available groups can be inspected with:
 
 ```{r}
 retirement_groups()
-retirement_countries()
-retirement_variables()
+```
+
+A few available countries can be inspected with:
+
+```{r}
+head(retirement_countries())
+```
+
+A few available measures can be inspected with:
+
+```{r}
+head(retirement_variables())
+```
+
+Measures that support women-versus-men comparison can be inspected with:
+
+```{r}
 sex_comparable_measures()
 ```
+
+These helper functions are intended for discovery. In a typical analysis, one would use them to find valid country names, groups, and measure codes before calling the plotting or data-returning functions.
 
 ## Country names and aliases
 
 The package accepts several common country-name aliases for convenience. For example, `"Turkey"` resolves to `"Türkiye"` and `"South Korea"` resolves to `"Korea"` in returned plot labels or data labels.
 
 ```{r}
-retirement_country_aliases()
+head(retirement_country_aliases())
 ```
 
-# 1. Start with trends
+This makes the package more forgiving when users enter common English names that differ from the names used in the cleaned data set.
+
+# Exploratory workflow
+
+A typical exploratory analysis with `retirer` moves from broad descriptive views to more focused comparisons. One useful sequence is:
+
+1. Start with broad retirement-age trends.
+2. Compare retirement age with demographic trends.
+3. Use maps for geographic group context.
+4. Move to one-year snapshots.
+5. Analyze women-versus-men differences.
+6. Study relationships between measures.
+7. Use returned data for custom analysis.
+
+The sections below follow this sequence.
+
+# 1. Start with broad retirement-age trends
 
 A good first step is usually to inspect broad time trends.
 
@@ -84,33 +145,36 @@ A good first step is usually to inspect broad time trends.
 
 The default retirement plot compares the four OECD/EU membership groups over time.
 
-```{r, fig.cap = "Average Retirement Age trends for various EU and OECD Affiliations"}
+```{r, fig.cap = "Average effective labour market exit age over time by OECD/EU membership group."}
 plot_retirement_trends()
 ```
-The plot shows that OECD country's average retirement age has been rising in recent years. Non affiliated countries have had a consistent downtrend over the last 50 years.
 
-You can also focus on selected countries.
+This plot gives a first view of how effective labour market exit age changes over time across membership groups. The group averages suggest that retirement-age patterns do not move uniformly across OECD/EU classifications. Some groups decline through the earlier decades and then rise again after 2000, while the OECD-only group remains relatively higher throughout much of the observed period. This motivates more focused country-level comparisons.
 
-```{r, fig.cap = "Average retirement age trend for Japan, Turkey, and South Korea"}
+One can also focus on selected countries.
+
+```{r, fig.cap = "Effective labour market exit age over time for Japan, Germany, and the United States."}
 plot_retirement_trends(
   level = "country",
   countries = c("Japan", "Germany", "United States")
 )
 ```
-All three countries have similar trend lines, with Japan having the highest average retirement age over the last 50 years.
 
-## Demographic trends
+This country-level version is useful when the research question concerns specific national cases rather than broad institutional groups. Japan remains higher than Germany and the United States across the observed years, while Germany has data beginning in 2000 and rises steadily afterward. The United States declines from 1970 through the early 2000s and then increases in the later years. These differences show why country-level analysis can reveal patterns hidden by group averages.
 
-Use `plot_demography_trends()` for demographic measures such as fertility, migration, mortality, life expectancy, or population size.
+# 2. Compare retirement age with demographic trends
 
-```{r, fig.cap = "Fertility rate trends for various EU and OECD Affiliations"}
+Retirement-age patterns are often easier to interpret when they are viewed alongside demographic change. Use `plot_demography_trends()` for demographic measures such as fertility, migration, mortality, life expectancy, or population size.
+
+```{r, fig.cap = "Total fertility-rate trends over time by OECD/EU membership group."}
 plot_demography_trends(measure = "TFR")
 ```
-There has been a sharp downturn in fertility rates among all country affiliations.
+
+This plot shows total fertility-rate trends over time. Fertility declines across all four OECD/EU membership groups, with the steepest long-run decline visible for countries in neither the OECD nor the EU. This pattern provides demographic context for retirement-age analysis because lower fertility can contribute to population aging, old-age dependency pressures, and policy debates about later-life labor-force participation.
 
 Life-expectancy measures also support sex-specific plotting.
 
-```{r, fig.cap = "Life expextancy for 65 year-old women of Japan, Turkey, and South Korea"}
+```{r, fig.cap = "Women's life expectancy at age 65 over time for Japan, Türkiye, and Korea."}
 plot_demography_trends(
   measure = "LE65",
   sex = "women",
@@ -118,43 +182,44 @@ plot_demography_trends(
   countries = c("Japan", "Turkey", "South Korea")
 )
 ```
-Life expectancy for both Japan and South Korea elderly women have sharply increased over the last 50 years, while Turkey women have modestly increased.
 
-## Paired retirement-demography trends
+This plot focuses on women’s life expectancy at age 65 for Japan, Türkiye, and Korea. Japan and Korea show large increases across the observed period, while Türkiye also increases but remains lower than the other two countries in the later years. Comparing these trajectories is useful because later-life survival patterns may shape how retirement-age trends are interpreted.
 
-If you want to compare retirement age with one demographic measure across time, use:
+To compare retirement age with one demographic measure across time, use `plot_retirement_vs_demography()`.
 
-```{r, "Comparison between life expectancy of 65 year olds and retirement age for various country affiliations"}
+```{r, fig.cap = "Paired trends comparing effective labour market exit age with life expectancy at age 65."}
 plot_retirement_vs_demography(
   demographic_measure = "LE65"
 )
 ```
-Life-expectancy has steadily increased for all affiliations, while retirement age has returned to the same level it was 50 years ago approximately.
 
-## Map-based group comparisons
+This paired plot places retirement age and life expectancy at age 65 in the same exploratory view. Life expectancy at age 65 generally increases over time, while retirement-age patterns are flatter or more uneven across groups. This contrast is useful for motivating questions about whether increases in later-life survival are matched by changes in effective labour market exit age. Because the two measures are on different scales, the plot should be interpreted as an exploratory comparison rather than a direct unit-for-unit comparison.
 
-In addition to time-series and cross-sectional plots, `retirer` can also display OECD/EU membership groups on a world map.
+# 3. Use maps for geographic group context
 
-This is useful when your main question is geographic rather than temporal.
+In addition to time-series and cross-sectional plots, `retirer` can display OECD/EU membership groups on a world map.
 
-```{r, fig.cap= "World map of various country affiliations"}
+```{r, fig.cap = "World map of OECD/EU membership group classifications."}
 map_groups()
 ```
-Most affiliations are geographically based. 
 
-You can also focus on selected groups and a specific year.
+The map shows how countries are classified into OECD/EU membership groups. The OECD-only group includes countries in North America, parts of Latin America, and parts of the Asia-Pacific region, while OECD + EU countries are concentrated in Europe. This view helps connect the group labels used in the trend plots to geographic and institutional context.
 
-```{r, fig.cap = "World map of membership affiliations in the year 2020"}
+One can also focus on selected groups and a specific year.
+
+```{r, fig.cap = "World map highlighting OECD + EU and OECD-only countries in 2010."}
 map_groups(
-  year = 2020,
+  year = 2010,
   groups = c("OECD + EU", "OECD only"),
   include_nonrepresented = TRUE
 )
 ```
 
-# 2. Move to cross-sectional snapshots
+This focused map highlights OECD + EU and OECD-only countries while leaving other represented countries and nonrepresented areas in the background. It is useful when the analysis focuses on institutional comparisons involving OECD membership while still preserving geographic context.
 
-Trend plots help you see change over time. Snapshot plots help you compare groups or countries in a single year.
+# 4. Move to cross-sectional snapshots
+
+Trend plots help to see change over time. Snapshot plots help to compare groups or countries in a single focal year.
 
 ## Snapshot data
 
@@ -163,136 +228,146 @@ Trend plots help you see change over time. Snapshot plots help you compare group
 ```{r}
 measure_snapshot_data(
   measure = "retirement_age",
-  year = 2020,
+  year = 2010,
   sex = "women"
 )
 ```
 
+The returned data frame contains the one-year values used by the plotting function. This is useful when one wants to inspect the exact values, make a table, or build a custom visualization.
 
 ## Snapshot plots
 
 The corresponding plot is:
 
-```{r, fig.cap = "Average retirement age for women in 2020 among country affiliations"}
+```{r, fig.cap = "Women's effective labour market exit age by OECD/EU membership group in 2010."}
 plot_measure_snapshot(
   measure = "retirement_age",
-  year = 2020,
+  year = 2010,
   sex = "women"
 )
 ```
-Women in EU countries, which are not OECD members had the lowest average retirement age 
-in 2020. 
+
+This snapshot compares women’s effective labour market exit age across OECD/EU membership groups in 2010. The OECD-only group has the highest average among the displayed groups, while the EU-only group has the lowest. Snapshot plots like this are useful when the goal is to compare levels in a focal year rather than interpret full time-series trajectories.
 
 Country-level snapshots are often useful for side-by-side comparison.
 
-```{r, fig.cap = "Life expectancy for 65 year olds from China, Japan, Germany, and Turkey in 2020"}
+```{r, fig.cap = "Life expectancy at age 65 for China, Japan, Germany, and Türkiye in 2010."}
 plot_measure_snapshot(
   measure = "LE65",
-  year = 2020,
+  year = 2010,
   level = "country",
   countries = c("China", "Japan", "Germany", "Turkey"),
   sort = "descending"
 )
 ```
-Japanese elderly had a 7 year longer life expectancy than the lowest life expectancy, Turkey.
 
-# 3. Analyze women-versus-men differences
+This plot compares life expectancy at age 65 for selected countries in 2010. Japan has the highest value among the selected countries, followed by Germany, China, and Türkiye. Sorting the countries makes the one-year comparison easier to read and helps identify cases for closer investigation in later trend or relationship plots.
+
+# 5. Analyze women-versus-men differences
 
 A major use case for `retirer` is explicit sex comparison.
 
 ## Which measures support sex comparison?
 
-Not every demographic variable has a women/men version. Use:
+Not every demographic variable has a women/men version. Use `sex_comparable_measures()` to see which measures support sex comparison.
 
 ```{r}
 sex_comparable_measures()
 ```
 
-For sex-comparable demographic measures, `sex = "both"` uses the official combined-series column in the dataset. Retirement age is the main exception: because the data only provide separate women’s and men’s retirement ages, `sex = "both"` uses their arithmetic mean.
+For sex-comparable demographic measures, `sex = "both"` uses the official combined-series column in the data set when one is available. Retirement age is the main exception: because the retirement-age source provides separate women’s and men’s retirement ages, `sex = "both"` uses their arithmetic mean.
 
 ## Women and men over time
 
-Use `plot_sex_comparison_trends()` when you want to compare the two series directly.
+To compare the two series directly, use `plot_sex_comparison_trends()`:
 
-```{r, fig.cap = "Retirement age trends of men vs women among various country affiliations"}
+```{r, fig.cap = "Women's and men's effective labour market exit age trends by OECD/EU membership group."}
 plot_sex_comparison_trends(
   measure = "retirement_age"
 )
 ```
-Traditionally, men have a higher average retirement age than women.
 
-You can also do this for other sex-comparable measures:
+This plot compares women’s and men’s retirement-age trends across OECD/EU membership groups. Men generally have higher effective labour market exit ages than women, although the size of the difference varies by group and year. The faceted layout makes it easier to compare sex-specific trajectories within each group.
 
-```{r, fig.cap = "Mortality before 40 for men and women in China, Japan, Germany, and Turkey"}
+This can also be used for other sex-comparable measures.
+
+```{r, fig.cap = "Women's and men's demographic measure Q0040 trends for selected countries."}
 plot_sex_comparison_trends(
   measure = "Q0040",
   level = "country",
   countries = c("China", "Japan", "Germany", "Turkey")
 )
 ```
-Mortality for men and women are similar, with Turkey having a large decrease in mortality before age 40 in the last 50 years.
+
+This plot applies the same women-versus-men comparison to mortality before age 40. Men have higher values than women in the selected countries, and Türkiye shows a particularly large decline across the observed period. This example shows that the sex-comparison workflow is not limited to retirement age.
+
 ## Sex gaps over time
 
-Use `plot_sex_gap_trends()` when you want a directed difference instead of two separate lines.
+If a directed difference instead of two separate lines is desired, use `plot_sex_gap_trends()`:
 
-```{r, fig.cap = "Trend of retirement age gap among China, Japan, and Germany"}
+```{r, fig.cap = "Sex gap in effective labour market exit age over time for China, Japan, and Germany."}
 plot_sex_gap_trends(
   measure = "retirement_age",
   level = "country",
   countries = c("China", "Japan", "Germany")
 )
 ```
-China has had the largest average retirement age gap between men and women over the last 50 years. 
 
-You can reverse the sign convention if needed.
+This plot shows the women-minus-men gap in effective labour market exit age over time for selected countries. Negative values indicate that women have lower effective labour market exit ages than men. China has the largest negative gap among the selected countries, Japan’s gap narrows over time, and Germany stays close to zero in the years shown. This view is useful when the main object of interest is the size and direction of the disparity.
 
-```{r}
+The sign convention can be reversed if needed.
+
+```{r, fig.cap = "Men-minus-women gap in life expectancy at age 65 by OECD/EU membership group."}
 plot_sex_gap_trends(
   measure = "LE65",
   gap = "men_minus_women"
 )
 ```
 
-Gap plots always stay on the original scale of the measure. For example, a gap in `retirement_age` is measured in years, while a gap in `Q1560` is measured on the original mortality scale used by that variable.
+This version reverses the sign convention for the life-expectancy-at-age-65 gap. Because the plot uses men minus women, negative values indicate that women have higher life expectancy at age 65 than men. All groups remain below zero, but the size and trajectory of the gap vary across OECD/EU membership groups. Gap plots always stay on the original scale of the measure. For example, a gap in `retirement_age` is measured in years, while a gap in `Q1560` is measured on the original mortality scale used by that variable.
 
 ## Sex-gap snapshots
 
-You can also compare sex gaps across groups or countries in a single year.
+One can also compare sex gaps across groups or countries in a single year.
 
 ```{r}
 sex_gap_data(
   measure = "LE65",
-  year = 2020,
+  year = 2010,
   level = "country",
   countries = c("China", "Japan")
 )
 ```
 
-```{r, fig.cap = "Difference in Age 15-60 mortalities between men and women in 2020"}
+The data-returning helper is useful for inspecting the exact gap values before plotting or before using them in a custom table.
+
+```{r, fig.cap = "Women-minus-men gap in demographic measure Q1560 for China, Japan, and Germany in 2010."}
 plot_sex_gap_snapshot(
   measure = "Q1560",
-  year = 2020,
+  year = 2010,
   level = "country",
   countries = c("China", "Japan", "Germany"),
   gap = "women_minus_men"
 )
 ```
-Men mortalities were greater then women mortalities for all countries, with China having the largest difference.
+
+This snapshot plot compares the women-minus-men gap in mortality between ages 15 and 60 for selected countries in 2010. All displayed values are negative, indicating that women have lower mortality than men for this measure. China shows the largest negative gap among the selected countries, followed by Germany and Japan.
 
 ## Retirement gaps versus demographic gaps
 
-If you want to compare the sex gap in retirement age to the sex gap in another measure, use:
+To compare the sex gap in retirement age to the sex gap in another measure, use `plot_retirement_vs_demography_gap()`:
 
-```{r, fig.cap = "Life expectancy gender gap vs Retirement age gender gap among vaious country affiliations"}
+```{r, fig.cap = "Paired trends comparing the sex gap in retirement age with the sex gap in life expectancy at age 65."}
 plot_retirement_vs_demography_gap(
   demographic_measure = "LE65"
 )
 ```
-Women have higher life expectancy at age 65, with lower average retirement age.
 
-# 4. Study relationships between measures
+This paired plot compares the sex gap in retirement age with the sex gap in life expectancy at age 65. The life-expectancy gap is positive when women have higher life expectancy than men, while the retirement-age gap is often negative when women have lower effective labour market exit ages than men. This plot is useful for exploratory analysis of disparities, but it should not be interpreted causally.
 
-Once you understand trends and snapshots, the next step is often to ask whether two measures are associated.
+# 6. Study relationships between measures
+
+Once trends and snapshots are understood, the next step is often to ask whether two measures are associated in a focal year.
 
 ## Relationship data
 
@@ -302,55 +377,59 @@ Once you understand trends and snapshots, the next step is often to ask whether 
 measure_relationship_data(
   x_measure = "LE65",
   y_measure = "retirement_age",
-  year = 2020,
+  year = 2010,
   level = "country",
   countries = c("China", "Japan", "Germany")
 )
 ```
 
+This data frame is useful when one wants to inspect the exact observations used in a relationship plot or fit a custom model outside the package’s plotting functions.
+
 ## Relationship plots
 
 Use `plot_measure_relationship()` for a scatterplot.
 
-```{r, fig.cap= "Scatterplot of Life Expectancy vs Retirement Age in 2020"}
+```{r, fig.cap = "Relationship between life expectancy at age 65 and effective labour market exit age for China, Japan, and Germany in 2010."}
 plot_measure_relationship(
   x_measure = "LE65",
   y_measure = "retirement_age",
-  year = 2020,
+  year = 2010,
   level = "country",
   countries = c("China", "Japan", "Germany"),
   show_labels = TRUE,
   add_smooth = FALSE
 )
 ```
-Life expectancy seems relatively correlated with retirement age, Japan had by far the highest life expectancy and retirement age among countries listed.
 
-You can also compare measures with different sex selections.
+This scatterplot compares life expectancy at age 65 with effective retirement age for selected countries in 2010. Japan has both the highest life expectancy at age 65 and the highest effective labour market exit age among the selected countries, while Germany and China occupy lower positions on one or both axes. Because the example includes only three countries, the plot should be read as a demonstration of the relationship-plotting workflow rather than evidence of a general cross-national association.
 
-```{r, fig.cap= "Life Expectancy for Women vs Retirement Age for Men in 2020"}
+One can also compare measures with different sex selections.
+
+```{r, fig.cap = "Relationship between women's life expectancy at age 65 and men's effective labour market exit age in 2010."}
 plot_measure_relationship(
   x_measure = "LE65",
   y_measure = "retirement_age",
-  year = 2020,
+  year = 2010,
   x_sex = "women",
   y_sex = "men",
   level = "country",
   countries = c("China", "Japan", "Germany")
 )
 ```
-Higher life expectancy for women seems to be loosely correlated with higher retirement age for men in listed countries.
 
-By default, `plot_measure_relationship()` adds a black least-squares regression line. Set `add_smooth = FALSE` when you want only the points.
+This plot shows that the two axes do not need to use the same sex selection. In this example, women’s life expectancy at age 65 is compared with men’s effective labour market exit age. The flexibility is useful when a research question compares one sex-specific demographic measure with another sex-specific retirement-age measure.
+
+By default, `plot_measure_relationship()` adds a least-squares regression line. Set `add_smooth = FALSE` to only show the points.
 
 ## Gap relationships
 
 Use `plot_gap_relationship()` when both axes are directed sex gaps.
 
-```{r, , fig.cap = "Scatterplot of Life Expectancy Gender Gap vs Retirement Age Gender Gap in 2020"}
+```{r, fig.cap = "Relationship between sex gaps in life expectancy at age 65 and effective labour market exit age in 2010."}
 plot_gap_relationship(
   x_measure = "LE65",
   y_measure = "retirement_age",
-  year = 2020,
+  year = 2010,
   level = "country",
   countries = c("China", "Japan", "Germany"),
   gap = "women_minus_men",
@@ -359,62 +438,18 @@ plot_gap_relationship(
 )
 ```
 
-This is useful when your substantive question is about disparities rather than levels.
+This plot compares the women-minus-men gap in life expectancy at age 65 with the women-minus-men gap in effective retirement age. Japan has the largest life-expectancy gap among the selected countries, while China has the largest negative retirement-age gap. The plot is useful for comparing disparities across measures, but the small number of selected countries means it should be treated as exploratory.
 
-# 5. A typical exploratory workflow
+# 7. Use returned data for custom analysis
 
-For a graduate-level exploratory project, a good sequence is:
+One of the strengths of `retirer` is that several plotting functions are paired with tidy data helpers. These helpers make it easier to build custom figures, tables, or models.
 
-1. Start with a trend plot to understand the broad time pattern.
-2. Use a map when a geographic comparison is the most natural first view.
-3. Use a snapshot plot to compare countries or groups in a focal year.
-4. Check whether the measure supports sex comparison.
-5. Inspect women-versus-men differences directly with comparison and gap plots.
-6. Use relationship plots to see whether two measures move together.
-7. Pull the underlying data with `*_data()` helpers when you need custom figures or tables.
-
-For example:
-
-```{r}
-plot_retirement_trends(
-  level = "country",
-  countries = c("China", "Japan", "Germany")
-)
-
-plot_measure_snapshot(
-  measure = "LE65",
-  year = 2020,
-  level = "country",
-  countries = c("China", "Japan", "Germany")
-)
-
-plot_sex_gap_trends(
-  measure = "retirement_age",
-  level = "country",
-  countries = c("China", "Japan", "Germany")
-)
-
-plot_measure_relationship(
-  x_measure = "LE65",
-  y_measure = "retirement_age",
-  year = 2020,
-  level = "country",
-  countries = c("China", "Japan", "Germany"),
-  show_labels = TRUE,
-  add_smooth = FALSE
-)
-```
-
-# 6. Custom analysis with the returned data
-
-One of the strengths of `retirer` is that the plotting functions are paired with tidy data helpers.
-
-For example, you can get snapshot data and then make your own plot:
+For example, one can get snapshot data and then make a custom plot.
 
 ```{r}
 snap <- measure_snapshot_data(
   measure = "retirement_age",
-  year = 2020,
+  year = 2010,
   sex = "women",
   level = "country",
   countries = c("China", "Japan", "Germany")
@@ -423,13 +458,13 @@ snap <- measure_snapshot_data(
 snap
 ```
 
-Or you can get relationship data and fit your own model:
+It is also possible to get relationship data and fit a custom model.
 
 ```{r}
 rel <- measure_relationship_data(
   x_measure = "LE65",
   y_measure = "retirement_age",
-  year = 2020,
+  year = 2010,
   level = "country",
   countries = c("China", "Japan", "Germany")
 )
@@ -437,17 +472,132 @@ rel <- measure_relationship_data(
 rel
 ```
 
+These helpers are useful when the built-in plots are a starting point but the analysis needs a custom table, model, or figure.
+
+# Customizing `retirer` plots with ggplot2
+
+The plotting functions in `retirer` return `ggplot2` objects. This means users can add ordinary ggplot layers with `+`.
+
+For example, users can add titles, subtitles, captions, axis labels, and themes.
+
+```{r, fig.cap = "Customized retirement-age trends with centered title, centered subtitle, labels, caption, and minimal theme."}
+plot_retirement_trends(
+  level = "country",
+  countries = c("Japan", "Germany", "United States")
+) +
+  labs(
+    title = "Customized retirement-age trends",
+    subtitle = "Selected countries",
+    x = "Year",
+    y = "Effective labour market exit age",
+    caption = "Customized with ordinary ggplot2 layers"
+  ) +
+  theme_minimal() +
+  theme(
+    plot.title = element_text(hjust = 0.5),
+    plot.subtitle = element_text(hjust = 0.5)
+  )
+```
+
+This example starts with a `retirer` plot and then uses ordinary ggplot2 syntax to customize the title, subtitle, axis labels, caption, and theme. Because the returned object is a ggplot object, the plot can be modified after it is created. The title and subtitle are centered with `theme()`.
+
+Users can also replace axis scales.
+
+```{r, fig.cap = "Retirement-age trends with a replacement y-axis scale and centered title and subtitle."}
+plot_retirement_trends(
+  level = "country",
+  countries = c("Japan", "Germany", "United States")
+) +
+  scale_y_continuous(
+    limits = c(55, 75),
+    breaks = seq(55, 75, by = 5)
+  ) +
+  labs(
+    title = "Retirement-age trends with a custom y-axis scale",
+    subtitle = "Selected countries",
+    y = "Effective labour market exit age"
+  ) +
+  theme(
+    plot.title = element_text(hjust = 0.5),
+    plot.subtitle = element_text(hjust = 0.5)
+  )
+```
+
+Because the original plot already includes a y-axis scale, ggplot2 may print a message saying that the existing y scale is being replaced. This is standard ggplot2 behavior. It means the custom scale has replaced the default scale.
+
+Users can also change color scales.
+
+```{r, fig.cap = "Retirement-age trends with a replacement color scale and centered title and subtitle."}
+plot_retirement_trends(
+  level = "country",
+  countries = c("Japan", "Germany", "United States")
+) +
+  scale_colour_brewer(palette = "Dark2") +
+  labs(
+    title = "Retirement-age trends with a custom color scale",
+    subtitle = "Selected countries"
+  ) +
+  theme(
+    plot.title = element_text(hjust = 0.5),
+    plot.subtitle = element_text(hjust = 0.5)
+  )
+```
+
+This example replaces the default color scale with a Brewer palette. For some group-level plots, adding a new color scale may replace an existing internal scale. This is normal ggplot2 behavior.
+
+Users can also add new geoms to some plots.
+
+```{r, fig.cap = "Customized relationship plot with an added linear smoother and centered title and subtitle."}
+plot_measure_relationship(
+  x_measure = "LE65",
+  y_measure = "retirement_age",
+  year = 2010,
+  level = "country",
+  countries = c("Japan", "Germany", "United States"),
+  show_labels = TRUE,
+  add_smooth = FALSE
+) +
+  geom_smooth(method = "lm", se = FALSE) +
+  labs(
+    title = "Life expectancy at 65 and retirement age",
+    subtitle = "Selected countries, 2010",
+    x = "Life expectancy at age 65",
+    y = "Effective labour market exit age"
+  ) +
+  theme(
+    plot.title = element_text(hjust = 0.5),
+    plot.subtitle = element_text(hjust = 0.5)
+  )
+```
+
+This example adds a linear smoother after the package creates the base scatterplot. It demonstrates that `retirer` plots can serve as starting points for further ggplot-based exploration.
+
+# Limitations and future work
+
+The plotting functions in `retirer` return `ggplot2` objects, so users can add many standard ggplot layers, including labels, captions, themes, reference lines, additional geoms, and replacement scale layers.
+
+Some plots define internal axis scales or group color scales to keep the default output readable. When users add a new scale for the same aesthetic, ggplot2 may replace the existing scale and print the standard message that a scale is already present.
+
+The paired retirement-demography plots place retirement age and demographic measures together even when they are measured on different scales. This design is useful for the default exploratory workflow, but complete axis customization may be easier by using the package’s data-returning helpers and then building a fully custom ggplot.
+
+A second limitation concerns data availability and reproducibility. As noted in the data provenance section, the raw OECD retirement-age data set is no longer publicly accessible in a straightforward way. This limits reproducibility for users who want to rebuild the package data from raw sources.
+
+The retirement-age source also has much sparser time coverage than the United Nations World Population Prospects data. Although the UN demographic file contains annual observations for many locations, the retirement-age file contains selected years only: 1970, 1980, 1990, 2000, 2005, 2010, and 2015 through 2020. Because `retirer` combines the two sources, UN observations that could not be paired with a retirement-age observation were removed during data construction. The resulting package data are therefore a matched retirement-demography panel, not the full UN annual panel.
+
+Future versions of `retirer` could identify an actively maintained, publicly accessible retirement-age or labour-market-exit data set with broader annual country coverage. Ideally, such a source would make it possible to pair retirement measures with demographic indicators for every available country and year, similar to the annual structure of the UN World Population Prospects data. Future versions could also incorporate more explicit customization arguments for palettes, themes, axis limits, and scale controls, making fuller ggplot customization and integration easier for users.
+
 # Conclusion
 
-`retirer` is designed to support a coherent exploratory workflow rather than just isolated plotting calls.
+`retirer` is designed to support a coherent exploratory workflow for studying retirement-age and demographic patterns across countries and over time.
 
 The core idea is simple:
 
-* use trend plots for change over time,
-* use maps for geographic group comparison,
+* use trend plots to study change over time,
+* use demographic trends to place retirement age in aging-population context,
+* use maps for geographic and institutional group comparison,
 * use snapshot plots for one-year comparisons,
 * use sex-comparison functions for women-versus-men analysis,
-* use relationship plots to study associations, and
-* use the data helpers whenever you need custom outputs.
+* use relationship plots to study associations between measures, and
+* use data helpers whenever custom outputs are needed.
 
-That combination should cover many first-pass research tasks in retirement and demographic analysis.
+Together, these tools make it possible to move from broad descriptive exploration to more focused comparisons while keeping the underlying matched retirement-demography data available for tables, models, and custom graphics.
