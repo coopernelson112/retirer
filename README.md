@@ -5,6 +5,7 @@
 
 <!-- badges: start -->
 
+[![R-CMD-check.yaml](https://github.com/coopernelson112/retirer/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/coopernelson112/retirer/actions/workflows/R-CMD-check.yaml)
 <!-- badges: end -->
 
 The goal of `retirer` is to make it easy to explore retirement-age and

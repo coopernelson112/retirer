@@ -5,3 +5,4 @@
 ^\.Rhistory$
 ^\.gitignore$
 ^README\.Rmd$
+^\.github$

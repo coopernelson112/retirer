@@ -31,7 +31,10 @@ It combines effective labour market exit age data from the OECD with demographic
 * relationships between measures, and
 * simple geographic comparisons of OECD/EU membership groups.
 
+Understanding trends of retirement age has become increasingly important among the dramatic aging of certain countries as well as overall increased life expectancy. This data can help clarify how countries are handling the prevalence of these trends and remedy potential issues such as shrinking working-age population and pressure on pensions. 
+
 This vignette walks through a typical workflow.
+You can find the source code here: [retirer GitHub repository](https://github.com/coopernelson112/retirer)
 
 # Data provenance
 
@@ -81,30 +84,33 @@ A good first step is usually to inspect broad time trends.
 
 The default retirement plot compares the four OECD/EU membership groups over time.
 
-```{r}
+```{r, fig.cap = "Average Retirement Age trends for various EU and OECD Affiliations"}
 plot_retirement_trends()
 ```
+The plot shows that OECD country's average retirement age has been rising in recent years. Non affiliated countries have had a consistent downtrend over the last 50 years.
 
 You can also focus on selected countries.
 
-```{r}
+```{r, fig.cap = "Average retirement age trend for Japan, Turkey, and South Korea"}
 plot_retirement_trends(
   level = "country",
   countries = c("Japan", "Germany", "United States")
 )
 ```
+All three countries have similar trend lines, with Japan having the highest average retirement age over the last 50 years.
 
 ## Demographic trends
 
 Use `plot_demography_trends()` for demographic measures such as fertility, migration, mortality, life expectancy, or population size.
 
-```{r}
+```{r, fig.cap = "Fertility rate trends for various EU and OECD Affiliations"}
 plot_demography_trends(measure = "TFR")
 ```
+There has been a sharp downturn in fertility rates among all country affiliations.
 
 Life-expectancy measures also support sex-specific plotting.
 
-```{r}
+```{r, fig.cap = "Life expextancy for 65 year-old women of Japan, Turkey, and South Korea"}
 plot_demography_trends(
   measure = "LE65",
   sex = "women",
@@ -112,16 +118,18 @@ plot_demography_trends(
   countries = c("Japan", "Turkey", "South Korea")
 )
 ```
+Life expectancy for both Japan and South Korea elderly women have sharply increased over the last 50 years, while Turkey women have modestly increased.
 
 ## Paired retirement-demography trends
 
 If you want to compare retirement age with one demographic measure across time, use:
 
-```{r}
+```{r, "Comparison between life expectancy of 65 year olds and retirement age for various country affiliations"}
 plot_retirement_vs_demography(
   demographic_measure = "LE65"
 )
 ```
+Life-expectancy has steadily increased for all affiliations, while retirement age has returned to the same level it was 50 years ago approximately.
 
 ## Map-based group comparisons
 
@@ -129,13 +137,14 @@ In addition to time-series and cross-sectional plots, `retirer` can also display
 
 This is useful when your main question is geographic rather than temporal.
 
-```{r}
+```{r, fig.cap= "World map of various country affiliations"}
 map_groups()
 ```
+Most affiliations are geographically based. 
 
 You can also focus on selected groups and a specific year.
 
-```{r}
+```{r, fig.cap = "World map of membership affiliations in the year 2020"}
 map_groups(
   year = 2020,
   groups = c("OECD + EU", "OECD only"),
@@ -159,21 +168,24 @@ measure_snapshot_data(
 )
 ```
 
+
 ## Snapshot plots
 
 The corresponding plot is:
 
-```{r}
+```{r, fig.cap = "Average retirement age for women in 2020 among country affiliations"}
 plot_measure_snapshot(
   measure = "retirement_age",
   year = 2020,
   sex = "women"
 )
 ```
+Women in EU countries, which are not OECD members had the lowest average retirement age 
+in 2020. 
 
 Country-level snapshots are often useful for side-by-side comparison.
 
-```{r}
+```{r, fig.cap = "Life expectancy for 65 year olds from China, Japan, Germany, and Turkey in 2020"}
 plot_measure_snapshot(
   measure = "LE65",
   year = 2020,
@@ -182,6 +194,7 @@ plot_measure_snapshot(
   sort = "descending"
 )
 ```
+Japanese elderly had a 7 year longer life expectancy than the lowest life expectancy, Turkey.
 
 # 3. Analyze women-versus-men differences
 
@@ -201,33 +214,35 @@ For sex-comparable demographic measures, `sex = "both"` uses the official combin
 
 Use `plot_sex_comparison_trends()` when you want to compare the two series directly.
 
-```{r}
+```{r, fig.cap = "Retirement age trends of men vs women among various country affiliations"}
 plot_sex_comparison_trends(
   measure = "retirement_age"
 )
 ```
+Traditionally, men have a higher average retirement age than women.
 
 You can also do this for other sex-comparable measures:
 
-```{r}
+```{r, fig.cap = "Mortality before 40 for men and women in China, Japan, Germany, and Turkey"}
 plot_sex_comparison_trends(
   measure = "Q0040",
   level = "country",
   countries = c("China", "Japan", "Germany", "Turkey")
 )
 ```
-
+Mortality for men and women are similar, with Turkey having a large decrease in mortality before age 40 in the last 50 years.
 ## Sex gaps over time
 
 Use `plot_sex_gap_trends()` when you want a directed difference instead of two separate lines.
 
-```{r}
+```{r, fig.cap = "Trend of retirement age gap among China, Japan, and Germany"}
 plot_sex_gap_trends(
   measure = "retirement_age",
   level = "country",
   countries = c("China", "Japan", "Germany")
 )
 ```
+China has had the largest average retirement age gap between men and women over the last 50 years. 
 
 You can reverse the sign convention if needed.
 
@@ -253,7 +268,7 @@ sex_gap_data(
 )
 ```
 
-```{r}
+```{r, fig.cap = "Difference in Age 15-60 mortalities between men and women in 2020"}
 plot_sex_gap_snapshot(
   measure = "Q1560",
   year = 2020,
@@ -262,16 +277,18 @@ plot_sex_gap_snapshot(
   gap = "women_minus_men"
 )
 ```
+Men mortalities were greater then women mortalities for all countries, with China having the largest difference.
 
 ## Retirement gaps versus demographic gaps
 
 If you want to compare the sex gap in retirement age to the sex gap in another measure, use:
 
-```{r}
+```{r, fig.cap = "Life expectancy gender gap vs Retirement age gender gap among vaious country affiliations"}
 plot_retirement_vs_demography_gap(
   demographic_measure = "LE65"
 )
 ```
+Women have higher life expectancy at age 65, with lower average retirement age.
 
 # 4. Study relationships between measures
 
@@ -295,7 +312,7 @@ measure_relationship_data(
 
 Use `plot_measure_relationship()` for a scatterplot.
 
-```{r}
+```{r, fig.cap= "Scatterplot of Life Expectancy vs Retirement Age in 2020"}
 plot_measure_relationship(
   x_measure = "LE65",
   y_measure = "retirement_age",
@@ -306,10 +323,11 @@ plot_measure_relationship(
   add_smooth = FALSE
 )
 ```
+Life expectancy seems relatively correlated with retirement age, Japan had by far the highest life expectancy and retirement age among countries listed.
 
 You can also compare measures with different sex selections.
 
-```{r}
+```{r, fig.cap= "Life Expectancy for Women vs Retirement Age for Men in 2020"}
 plot_measure_relationship(
   x_measure = "LE65",
   y_measure = "retirement_age",
@@ -320,6 +338,7 @@ plot_measure_relationship(
   countries = c("China", "Japan", "Germany")
 )
 ```
+Higher life expectancy for women seems to be loosely correlated with higher retirement age for men in listed countries.
 
 By default, `plot_measure_relationship()` adds a black least-squares regression line. Set `add_smooth = FALSE` when you want only the points.
 
@@ -327,7 +346,7 @@ By default, `plot_measure_relationship()` adds a black least-squares regression 
 
 Use `plot_gap_relationship()` when both axes are directed sex gaps.
 
-```{r}
+```{r, , fig.cap = "Scatterplot of Life Expectancy Gender Gap vs Retirement Age Gender Gap in 2020"}
 plot_gap_relationship(
   x_measure = "LE65",
   y_measure = "retirement_age",
