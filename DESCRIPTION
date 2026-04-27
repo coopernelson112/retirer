@@ -31,7 +31,8 @@ Imports:
     ggplot2,
     maps,
     rlang,
-    tidyr
+    tidyr,
+    tibble
 Depends: 
     R (>= 4.1.0)
 LazyData: true

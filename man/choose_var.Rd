@@ -2,13 +2,29 @@
 % Please edit documentation in R/choose_var.R
 \name{choose_var}
 \alias{choose_var}
-\title{Choose any variables from retirement data to use for analysis}
+\title{Choose or remove variables from retirement data to use for analysis}
 \usage{
-choose_var(..., data = retirement)
+choose_var(..., data = retirement, include = TRUE)
 }
 \arguments{
-\item{...}{Any variable chosen to keep in the final dataset}
+\item{...}{Variable names to keep in the final dataset.}
+
+\item{data}{A data frame to select variables from. Defaults to \code{retirement}.}
+
+\item{include}{A logical value determining whether the variables chosen
+should be included or excluded.}
+}
+\value{
+A data frame containing only the desired variables.
 }
 \description{
-If no variables are chosen, some general population statistics are kept
+If no variables are chosen, a default set of general population
+statistics is kept. If include = FALSE, those statistics are removed.
+}
+\examples{
+choose_var()
+choose_var(include = FALSE)
+choose_var("year", "SortOrder", "ave_age_men")
+choose_var("year", "SortOrder", "ave_age_men", include = FALSE)
+
 }
